@@ -1,0 +1,27 @@
+# Bot token and chat ID are required. Restart after editing.
+bot-token: ""
+chat-id: ""
+# Messages configuration
+# Supports %player% placeholder
+join-message: "Player %player% joined"
+quit-message: "Player %player% left"
+# Supports %player%, %reason%, %world%, %x%, %y%, %z%
+death-message: "Player %player% died: %reason% at %world% (%x%, %y%, %z%)"
+start-message: "Server started!"
+
+# Title configuration using MiniMessage format
+# Supports <player> placeholder
+# Examples:
+# - <red>Hello <player>!
+# - <gradient:blue:red>Welcome <player>
+# See https://docs.advntr.dev/minimessage/format.html
+join-title: "<gradient:#7f6bdb:#f79459:red>Welcome <player>!</gradient>"
+join-subtitle: "<gray>Enjoy your stay!"
+
+# Title timing configuration (in ticks, 20 ticks = 1 second)
+# fade-in: time for title to fade in
+# stay: time title stays on screen
+# fade-out: time for title to fade out
+title-fade-in: 20
+title-stay: 50
+title-fade-out: 20
