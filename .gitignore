@@ -20,6 +20,9 @@ out/
 .project
 .settings/
 
+# Zed
+.factorypath
+
 # NetBeans
 /nbproject/private/
 /build/
