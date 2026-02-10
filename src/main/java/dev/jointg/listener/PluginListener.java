@@ -19,9 +19,10 @@ public final class PluginListener implements Listener {
   private final String titleTemplate;
   private final String subtitleTemplate;
   private final Title.Times times;
+  private final String chatJoinMessage;
 
   public PluginListener(Plugin plugin, TelegramNotifier notifier, String titleTemplate, String subtitleTemplate,
-      int fadeInTicks, int stayTicks, int fadeOutTicks) {
+      int fadeInTicks, int stayTicks, int fadeOutTicks, String chatJoinMessage) {
     this.plugin = plugin;
     this.notifier = notifier;
     this.titleTemplate = titleTemplate;
@@ -30,19 +31,29 @@ public final class PluginListener implements Listener {
         Duration.ofMillis(fadeInTicks * 50L),
         Duration.ofMillis(stayTicks * 50L),
         Duration.ofMillis(fadeOutTicks * 50L));
+    this.chatJoinMessage = chatJoinMessage;
   }
 
   @EventHandler
   public void onPlayerJoin(PlayerJoinEvent event) {
+    // Oculta el mensaje de join por defecto
     event.joinMessage(null);
 
     MiniMessage mm = MiniMessage.miniMessage();
-    Component title = mm.deserialize(titleTemplate, Placeholder.unparsed("player", event.getPlayer().getName()));
-    Component subtitle = mm.deserialize(subtitleTemplate, Placeholder.unparsed("player", event.getPlayer().getName()));
+    String playerName = event.getPlayer().getName();
+    Component title = mm.deserialize(titleTemplate, Placeholder.unparsed("player", playerName));
+    Component subtitle = mm.deserialize(subtitleTemplate, Placeholder.unparsed("player", playerName));
 
     event.getPlayer().showTitle(Title.title(title, subtitle, times));
 
-    notifier.notifyJoin(plugin, event.getPlayer().getName());
+    // Mensaje de bienvenida en el chat global si está configurado
+    if (chatJoinMessage != null && !chatJoinMessage.isBlank()) {
+      String msg = chatJoinMessage.replace("<player>", playerName);
+      Component joinComponent = mm.deserialize(msg);
+      event.getPlayer().getServer().sendMessage(joinComponent);
+    }
+
+    notifier.notifyJoin(plugin, playerName);
   }
 
   @EventHandler

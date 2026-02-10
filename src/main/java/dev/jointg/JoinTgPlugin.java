@@ -3,89 +3,109 @@ package dev.jointg;
 import dev.jointg.listener.PluginListener;
 import dev.jointg.telegram.TelegramNotifier;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.event.HandlerList;
 
 public final class JoinTgPlugin extends JavaPlugin {
 
     private TelegramNotifier notifier;
+    private PluginListener listenerInstance;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
+        reloadPluginConfig();
 
+        // Registrar comando /jointg reload
+        getCommand("jointg").setExecutor((sender, command, label, args) -> {
+            if (args.length > 0 && args[0].equalsIgnoreCase("reload")) {
+                reloadConfig();
+                reloadPluginConfig();
+                sender.sendMessage("§a[JoinTgPlugin] Configuración recargada correctamente.");
+                return true;
+            }
+            sender.sendMessage("§eUso: /jointg reload");
+            return true;
+        });
+
+        getComponentLogger().info("JoinTgPlugin enabled");
+    }
+
+    private void reloadPluginConfig() {
+        if (listenerInstance != null) {
+            HandlerList.unregisterAll(listenerInstance);
+        }
         String botToken = getConfig().getString("bot-token");
         String chatId = getConfig().getString("chat-id");
 
-        if (botToken == null) botToken = "";
-        if (chatId == null) chatId = "";
+        if (botToken == null)
+            botToken = "";
+        if (chatId == null)
+            chatId = "";
 
         botToken = botToken.trim();
         chatId = chatId.trim();
 
         String joinMessage = getConfig().getString(
-            "join-message",
-            getConfig().getString("message-template", "Player %player% joined")
-        );
+                "join-message",
+                getConfig().getString("message-template", "Player %player% joined"));
         String quitMessage = getConfig().getString(
-            "quit-message",
-            "Player %player% left"
-        );
+                "quit-message",
+                "Player %player% left");
         String deathMessage = getConfig().getString(
-            "death-message",
-            "Player %player% died because of %reason% at %world% (%x%, %y%, %z%)"
-        );
+                "death-message",
+                "Player %player% died because of %reason% at %world% (%x%, %y%, %z%)");
         String startMessage = getConfig().getString(
-            "start-message",
-            "Server started!"
-        );
+                "start-message",
+                "Server started!");
 
         if (botToken.isEmpty() || chatId.isEmpty()) {
             getComponentLogger().warn(
-                "Telegram bot token or chat ID is missing; Telegram notifications disabled."
-            );
+                    "Telegram bot token or chat ID is missing; Telegram notifications disabled.");
             notifier = TelegramNotifier.disabled(getComponentLogger());
         } else {
             notifier = TelegramNotifier.enabled(
-                getComponentLogger(),
-                botToken,
-                chatId,
-                joinMessage,
-                quitMessage,
-                deathMessage,
-                startMessage
-            );
+                    getComponentLogger(),
+                    botToken,
+                    chatId,
+                    joinMessage,
+                    quitMessage,
+                    deathMessage,
+                    startMessage);
         }
 
         String title = getConfig().getString(
-            "join-title",
-            "<gradient:green:blue>Welcome <player>!"
-        );
+                "join-title",
+                "<gradient:green:blue>Welcome <player>!");
         String subtitle = getConfig().getString(
-            "join-subtitle",
-            "<gray>Enjoy your stay"
-        );
+                "join-subtitle",
+                "<gray>Enjoy your stay");
 
         int fadeIn = getConfig().getInt("title-fade-in", 10);
         int stay = getConfig().getInt("title-stay", 40);
         int fadeOut = getConfig().getInt("title-fade-out", 20);
 
+        String chatJoinMessage = getConfig().getString("chat-join-message", "");
+
+        if (listenerInstance != null) {
+        }
+
+        listenerInstance = new PluginListener(
+                this,
+                notifier,
+                title,
+                subtitle,
+                fadeIn,
+                stay,
+                fadeOut,
+                chatJoinMessage);
+
         getServer()
-            .getPluginManager()
-            .registerEvents(
-                new PluginListener(
-                    this,
-                    notifier,
-                    title,
-                    subtitle,
-                    fadeIn,
-                    stay,
-                    fadeOut
-                ),
-                this
-            );
+                .getPluginManager()
+                .registerEvents(listenerInstance, this);
 
-        notifier.notifyStart(this);
-
-        getComponentLogger().info("JoinTgPlugin enabled");
+        if (notifier != null) {
+            notifier.notifyStart(this);
+        }
     }
 
     @Override

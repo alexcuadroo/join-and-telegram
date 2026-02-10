@@ -1,6 +1,7 @@
 # Bot token and chat ID are required. Restart after editing.
 bot-token: ""
 chat-id: ""
+
 # Messages configuration
 # Supports %player% placeholder
 join-message: "Player %player% joined"
@@ -8,6 +9,11 @@ quit-message: "Player %player% left"
 # Supports %player%, %reason%, %world%, %x%, %y%, %z%
 death-message: "Player %player% died: %reason% at %world% (%x%, %y%, %z%)"
 start-message: "Server started!"
+
+# Chat join message (MiniMessage format)
+# Set to empty or comment to disable
+# Example: <bold><white>[<green>+<white>] <red><player></red></white></bold>
+chat-join-message: ""
 
 # Title configuration using MiniMessage format
 # Supports <player> placeholder

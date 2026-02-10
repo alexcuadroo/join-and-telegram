@@ -1,6 +1,13 @@
+
 name: JoinTelegram
-version: 1.0.0
+version: 1.3.0
 main: dev.jointg.JoinTgPlugin
 api-version: "1.21"
 authors:
   - alexcuadroo
+commands:
+  jointg:
+    description: "Recarga la configuración del plugin"
+    usage: "/jointg reload"
+    permission: "jointg.reload"
+    permission-message: "No tienes permiso para usar este comando."

@@ -4,7 +4,7 @@
 
     <groupId>dev.jointg</groupId>
     <artifactId>join-tg</artifactId>
-    <version>1.0.0</version>
+    <version>1.3.0</version>
     <name>join-tg</name>
     <description>Paper plugin that greets players and notifies Telegram on join.</description>
 
