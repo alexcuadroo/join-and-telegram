@@ -12,6 +12,11 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
+import net.luckperms.api.LuckPerms;
+import net.luckperms.api.LuckPermsProvider;
+import net.luckperms.api.model.user.User;
+import net.luckperms.api.query.QueryOptions;
+import org.bukkit.entity.Player;
 
 public final class PluginListener implements Listener {
   private final Plugin plugin;
@@ -40,17 +45,37 @@ public final class PluginListener implements Listener {
     event.joinMessage(null);
 
     MiniMessage mm = MiniMessage.miniMessage();
-    String playerName = event.getPlayer().getName();
+    Player player = event.getPlayer();
+    String playerName = player.getName();
+
+    // Obtener prefix LuckPerms y convertir colores legacy a MiniMessage
+    String prefix = "";
+    try {
+      LuckPerms luckPerms = LuckPermsProvider.get();
+      User user = luckPerms.getUserManager().getUser(player.getUniqueId());
+      if (user != null) {
+        String rawPrefix = user.getCachedData().getMetaData(QueryOptions.defaultContextualOptions()).getPrefix();
+        if (rawPrefix != null) {
+          // Convertir &-codes a componente y luego a MiniMessage
+          Component prefixComponent = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
+              .legacyAmpersand().deserialize(rawPrefix);
+          prefix = MiniMessage.miniMessage().serialize(prefixComponent);
+        }
+      }
+    } catch (Exception e) {
+      prefix = "";
+    }
+
     Component title = mm.deserialize(titleTemplate, Placeholder.unparsed("player", playerName));
     Component subtitle = mm.deserialize(subtitleTemplate, Placeholder.unparsed("player", playerName));
 
-    event.getPlayer().showTitle(Title.title(title, subtitle, times));
+    player.showTitle(Title.title(title, subtitle, times));
 
     // Mensaje de bienvenida en el chat global si está configurado
     if (chatJoinMessage != null && !chatJoinMessage.isBlank()) {
-      String msg = chatJoinMessage.replace("<player>", playerName);
+      String msg = chatJoinMessage.replace("<player>", playerName).replace("<prefix>", prefix);
       Component joinComponent = mm.deserialize(msg);
-      event.getPlayer().getServer().sendMessage(joinComponent);
+      player.getServer().sendMessage(joinComponent);
     }
 
     notifier.notifyJoin(plugin, playerName);

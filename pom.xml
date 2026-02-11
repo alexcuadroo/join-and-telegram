@@ -4,7 +4,7 @@
 
     <groupId>dev.jointg</groupId>
     <artifactId>join-tg</artifactId>
-    <version>1.3.0</version>
+    <version>1.4.0</version>
     <name>join-tg</name>
     <description>Paper plugin that greets players and notifies Telegram on join.</description>
 
@@ -28,6 +28,12 @@
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
             <version>${paper.api.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.luckperms</groupId>
+            <artifactId>api</artifactId>
+            <version>5.4</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
