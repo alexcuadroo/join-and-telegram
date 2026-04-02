@@ -14,6 +14,7 @@ out/
 
 # VS Code
 .vscode/
+.agents/
 
 # Eclipse
 .classpath
