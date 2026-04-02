@@ -13,7 +13,7 @@ start-message: "Server started!"
 # Chat join message (MiniMessage format)
 # Set to empty or comment to disable
 # Placeholders: <player>, <prefix>
-# Example: <bold><white>[<green>+<white>]</white></bold> <prefix><player>
+# Example: <white>[<green>+<white>]</white> <prefix><player>
 chat-join-message: ""
 
 # Title configuration using MiniMessage format
