@@ -2,10 +2,14 @@ package dev.jointg;
 
 import dev.jointg.listener.PluginListener;
 import dev.jointg.telegram.TelegramNotifier;
+import dev.jointg.update.GitHubUpdateChecker;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.event.HandlerList;
 
 public final class JoinTgPlugin extends JavaPlugin {
+
+    private static final String GITHUB_OWNER = "alexcuadroo";
+    private static final String GITHUB_REPOSITORY = "join-and-telegram";
 
     private TelegramNotifier notifier;
     private PluginListener listenerInstance;
@@ -27,6 +31,8 @@ public final class JoinTgPlugin extends JavaPlugin {
             return true;
         });
 
+        GitHubUpdateChecker.checkForUpdates(this, GITHUB_OWNER, GITHUB_REPOSITORY);
+
         getComponentLogger().info("JoinTgPlugin enabled");
     }
 
@@ -45,6 +51,8 @@ public final class JoinTgPlugin extends JavaPlugin {
         botToken = botToken.trim();
         chatId = chatId.trim();
 
+        boolean telegramEnabled = getConfig().getBoolean("telegram-enabled", false);
+
         String joinMessage = getConfig().getString(
                 "join-message",
                 getConfig().getString("message-template", "Player %player% joined"));
@@ -58,7 +66,10 @@ public final class JoinTgPlugin extends JavaPlugin {
                 "start-message",
                 "Server started!");
 
-        if (botToken.isEmpty() || chatId.isEmpty()) {
+        if (!telegramEnabled) {
+            getComponentLogger().info("Telegram notifications disabled in config (telegram-enabled=false).");
+            notifier = TelegramNotifier.disabled(getComponentLogger());
+        } else if (botToken.isEmpty() || chatId.isEmpty()) {
             getComponentLogger().warn(
                     "Telegram bot token or chat ID is missing; Telegram notifications disabled.");
             notifier = TelegramNotifier.disabled(getComponentLogger());

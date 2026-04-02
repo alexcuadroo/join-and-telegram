@@ -1,4 +1,8 @@
-# Bot token and chat ID are required. Restart after editing.
+# Telegram notifications
+# Set false to disable Telegram messages without removing bot-token/chat-id.
+telegram-enabled: false
+# Bot token and chat ID are required only when telegram-enabled is true.
+# Restart after editing.
 bot-token: ""
 chat-id: ""
 
