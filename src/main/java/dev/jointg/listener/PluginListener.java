@@ -64,6 +64,9 @@ public final class PluginListener implements Listener {
       }
     } catch (Exception e) {
       prefix = "";
+      plugin.getComponentLogger().debug(
+          "Could not resolve LuckPerms prefix for player " + playerName + ".",
+          e);
     }
 
     Component title = mm.deserialize(titleTemplate, Placeholder.unparsed("player", playerName));

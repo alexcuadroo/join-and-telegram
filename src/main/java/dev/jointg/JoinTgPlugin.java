@@ -40,6 +40,10 @@ public final class JoinTgPlugin extends JavaPlugin {
         if (listenerInstance != null) {
             HandlerList.unregisterAll(listenerInstance);
         }
+        if (notifier != null) {
+            notifier.close();
+            notifier = null;
+        }
         String botToken = getConfig().getString("bot-token");
         String chatId = getConfig().getString("chat-id");
 
@@ -96,9 +100,6 @@ public final class JoinTgPlugin extends JavaPlugin {
         int fadeOut = getConfig().getInt("title-fade-out", 20);
 
         String chatJoinMessage = getConfig().getString("chat-join-message", "");
-
-        if (listenerInstance != null) {
-        }
 
         listenerInstance = new PluginListener(
                 this,
