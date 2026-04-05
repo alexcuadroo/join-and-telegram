@@ -31,6 +31,10 @@ public final class JoinTgPlugin extends JavaPlugin {
             return true;
         });
 
+        if (getServer().getPluginManager().getPlugin("LuckPerms") == null) {
+            getComponentLogger().warn("LuckPerms not found! Install LuckPerms to display prefixes in join messages.");
+        }
+
         GitHubUpdateChecker.checkForUpdates(this, GITHUB_OWNER, GITHUB_REPOSITORY);
 
         getComponentLogger().info("JoinTgPlugin enabled");

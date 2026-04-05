@@ -5,6 +5,7 @@ Plugin de Paper que notifica en Telegram cuando jugadores se unen, salen o muere
 - Java 21+ (MC 1.21) o Java 25+ (MC 26.1)
 - Maven 3.6+
 - Servidor Paper compatible
+- [LuckPerms](https://luckperms.net/) — necesario para mostrar prefijos en los mensajes de join
 
 **Construir**
 

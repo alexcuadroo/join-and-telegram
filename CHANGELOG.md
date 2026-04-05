@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.4.4
+
+### Dependencia de LuckPerms
+
+- Se añade un aviso en consola al iniciar el plugin si **LuckPerms** no está instalado.
+- Se declara `LuckPerms` como `softdepend` en `plugin.yml`.
+- Se documenta LuckPerms como requisito en el README.
+
 ## v1.4.3
 
 ### Soporte multi-versión de Minecraft
