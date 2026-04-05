@@ -2,7 +2,7 @@
 name: JoinTelegram
 version: 1.4.2
 main: dev.jointg.JoinTgPlugin
-api-version: "1.21"
+api-version: "${paper.plugin.api-version}"
 authors:
   - alexcuadroo
 commands:

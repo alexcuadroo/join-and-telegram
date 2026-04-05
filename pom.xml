@@ -9,12 +9,34 @@
     <description>Paper plugin that greets players and notifies Telegram on join.</description>
 
     <properties>
-        <java.version>21</java.version>
-        <paper.api.version>1.21.1-R0.1-SNAPSHOT</paper.api.version>
-        <maven.compiler.source>${java.version}</maven.compiler.source>
-        <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <profiles>
+        <profile>
+            <id>mc-1_21</id>
+            <properties>
+                <maven.compiler.source>21</maven.compiler.source>
+                <maven.compiler.target>21</maven.compiler.target>
+                <paper.api.version>1.21.1-R0.1-SNAPSHOT</paper.api.version>
+                <paper.plugin.api-version>1.21</paper.plugin.api-version>
+                <mc.tag>1.21</mc.tag>
+            </properties>
+        </profile>
+        <profile>
+            <id>mc-26_1</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <maven.compiler.source>25</maven.compiler.source>
+                <maven.compiler.target>25</maven.compiler.target>
+                <paper.api.version>26.1.1.build.15-alpha</paper.api.version>
+                <paper.plugin.api-version>26.1</paper.plugin.api-version>
+                <mc.tag>26.1</mc.tag>
+            </properties>
+        </profile>
+    </profiles>
 
     <repositories>
         <repository>
@@ -39,13 +61,20 @@
     </dependencies>
 
     <build>
+        <finalName>${project.artifactId}-${project.version}-mc${mc.tag}</finalName>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.11.0</version>
                 <configuration>
-                    <release>${java.version}</release>
+                    <release>${maven.compiler.source}</release>
                 </configuration>
             </plugin>
             <plugin>
