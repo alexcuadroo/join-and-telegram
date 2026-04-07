@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.4.5
+
+### Tab completion para /jointg
+
+- Se añade `TabCompleter` al comando `/jointg` para que `reload` aparezca como sugerencia al presionar Tab.
+
 ## v1.4.4
 
 ### Dependencia de LuckPerms
