@@ -6,6 +6,10 @@ import dev.jointg.update.GitHubUpdateChecker;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.event.HandlerList;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public final class JoinTgPlugin extends JavaPlugin {
 
     private static final String GITHUB_OWNER = "alexcuadroo";
@@ -29,6 +33,17 @@ public final class JoinTgPlugin extends JavaPlugin {
             }
             sender.sendMessage("§eUso: /jointg reload");
             return true;
+        });
+
+        getCommand("jointg").setTabCompleter((sender, command, alias, args) -> {
+            if (args.length == 1) {
+                List<String> completions = new ArrayList<>();
+                if ("reload".startsWith(args[0].toLowerCase())) {
+                    completions.add("reload");
+                }
+                return completions;
+            }
+            return Collections.emptyList();
         });
 
         if (getServer().getPluginManager().getPlugin("LuckPerms") == null) {
