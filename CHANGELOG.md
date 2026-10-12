@@ -1,5 +1,30 @@
 # Changelog
 
+## v1.5.1
+
+### Corrección: crash al entrar sin LuckPerms
+
+- `PluginListener` referenciaba directamente clases del API de LuckPerms, lo que provocaba un `NoClassDefFoundError` (no capturable como `Exception`) al unirse un jugador si LuckPerms no estaba instalado.
+- Se aísla la integración en `dev.jointg.integration.PrefixProvider` y `LuckPermsPrefixProvider`, que solo se instancian si LuckPerms está presente. LuckPerms vuelve a ser **totalmente opcional**: sin él el plugin funciona y el `<prefix>` queda vacío.
+
+## v1.5.0
+
+### Soporte para Minecraft 26.2 y 26.3
+
+- Añadidos perfiles de Maven `mc-26_2` (activo por defecto) y `mc-26_3`, compilando contra las APIs estables `26.2.build.133-stable` y `26.3.build.176-stable`.
+- Actualizado el perfil `mc-26_1` a la API estable `26.1.2.build.74-stable`.
+- Como la API de Paper es retrocompatible, el JAR de `mc-26_1` cubre 26.1/26.2/26.3 y el de `mc-26_2` cubre 26.2/26.3.
+- `plugin.yml` ahora toma `version` de `${project.version}` para evitar que la versión se desincronice del `pom.xml`.
+
+### Limpieza y buenas prácticas
+
+- `/jointg reload` ya no envía el mensaje `start-message` a Telegram; solo se anuncia el arranque al habilitar el plugin.
+- Eliminados los códigos de color `§` embebidos en el comando; ahora se usa MiniMessage.
+- El parsing de la respuesta de GitHub usa Gson (incluido en Paper) en lugar de expresiones regulares.
+- `TelegramNotifier` ya no crea un `HttpClient` cuando las notificaciones están deshabilitadas y ahora registra respuestas HTTP de error de Telegram.
+- Eliminada la comprobación muerta de `notifier != null` y comprobaciones duplicadas de `getCommand("jointg")` / registros de listener sin desregistrar.
+- Se elimina el plugin `maven-shade-plugin`, que no aportaba nada al ser todas las dependencias `provided`.
+
 ## v1.4.5
 
 ### Tab completion para /jointg

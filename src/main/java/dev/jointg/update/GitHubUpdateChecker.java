@@ -1,5 +1,7 @@
 package dev.jointg.update;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -65,14 +67,14 @@ public final class GitHubUpdateChecker {
                     return;
                 }
 
-                String body = response.body();
-                String latestTag = extractJsonString(body, "tag_name");
+                JsonObject release = JsonParser.parseString(response.body()).getAsJsonObject();
+                String latestTag = getAsString(release, "tag_name");
                 if (latestTag == null || latestTag.isBlank()) {
                     plugin.getComponentLogger().debug("Could not parse latest release tag from GitHub response.");
                     return;
                 }
 
-                String releaseUrl = extractJsonString(body, "html_url");
+                String releaseUrl = getAsString(release, "html_url");
                 if (isNewerVersion(currentVersion, latestTag)) {
                     String fallbackReleaseUrl = "https://github.com/" + owner + "/" + repository + "/releases";
                     String resolvedReleaseUrl = releaseUrl == null || releaseUrl.isBlank() ? fallbackReleaseUrl
@@ -99,17 +101,13 @@ public final class GitHubUpdateChecker {
         });
     }
 
-    private static String encodePathSegment(String value) {
-        return URLEncoder.encode(value, StandardCharsets.UTF_8).replace("+", "%20");
+    private static String getAsString(JsonObject object, String key) {
+        var element = object.get(key);
+        return element != null && element.isJsonPrimitive() ? element.getAsString() : null;
     }
 
-    private static String extractJsonString(String json, String key) {
-        Pattern pattern = Pattern.compile("\\\"" + Pattern.quote(key) + "\\\"\\s*:\\s*\\\"(.*?)\\\"", Pattern.DOTALL);
-        Matcher matcher = pattern.matcher(json);
-        if (!matcher.find()) {
-            return null;
-        }
-        return matcher.group(1).replace("\\\\/", "/");
+    private static String encodePathSegment(String value) {
+        return URLEncoder.encode(value, StandardCharsets.UTF_8).replace("+", "%20");
     }
 
     private static boolean isNewerVersion(String currentVersion, String latestTag) {

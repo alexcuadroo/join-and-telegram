@@ -21,11 +21,11 @@ public final class TelegramNotifier {
   private final String deathMessage;
   private final String startMessage;
   private final boolean enabled;
+  /** Null when notifications are disabled, so no HTTP resources are allocated. */
   private final HttpClient client;
 
   private TelegramNotifier(ComponentLogger logger, String botToken, String chatId, String joinMessage,
-      String quitMessage,
-      String deathMessage, String startMessage, boolean enabled) {
+      String quitMessage, String deathMessage, String startMessage, boolean enabled) {
     this.logger = logger;
     this.botToken = botToken;
     this.chatId = chatId;
@@ -34,9 +34,9 @@ public final class TelegramNotifier {
     this.deathMessage = deathMessage;
     this.startMessage = startMessage;
     this.enabled = enabled;
-    this.client = HttpClient.newBuilder()
-        .connectTimeout(Duration.ofSeconds(5))
-        .build();
+    this.client = enabled
+        ? HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build()
+        : null;
   }
 
   public static TelegramNotifier enabled(ComponentLogger logger, String botToken, String chatId,
@@ -51,7 +51,7 @@ public final class TelegramNotifier {
   }
 
   private void sendMessage(Plugin plugin, String message) {
-    if (!enabled || message == null || message.isEmpty()) {
+    if (!enabled || client == null || message == null || message.isEmpty()) {
       return;
     }
 
@@ -67,7 +67,10 @@ public final class TelegramNotifier {
 
     plugin.getServer().getAsyncScheduler().runNow(plugin, task -> {
       try {
-        client.send(request, HttpResponse.BodyHandlers.discarding());
+        HttpResponse<Void> response = client.send(request, HttpResponse.BodyHandlers.discarding());
+        if (response.statusCode() >= 400) {
+          logger.warn("Telegram notification failed with HTTP " + response.statusCode() + ".");
+        }
       } catch (IOException e) {
         logger.warn("Failed to send Telegram notification", e);
       } catch (InterruptedException e) {
@@ -78,6 +81,9 @@ public final class TelegramNotifier {
   }
 
   public void close() {
+    if (client == null) {
+      return;
+    }
     try {
       client.close();
     } catch (Exception e) {

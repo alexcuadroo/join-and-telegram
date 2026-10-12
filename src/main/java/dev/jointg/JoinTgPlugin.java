@@ -1,78 +1,84 @@
 package dev.jointg;
 
+import dev.jointg.integration.PrefixProvider;
 import dev.jointg.listener.PluginListener;
 import dev.jointg.telegram.TelegramNotifier;
 import dev.jointg.update.GitHubUpdateChecker;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.event.HandlerList;
-
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.command.PluginCommand;
+import org.bukkit.event.HandlerList;
+import org.bukkit.plugin.java.JavaPlugin;
 
 public final class JoinTgPlugin extends JavaPlugin {
 
     private static final String GITHUB_OWNER = "alexcuadroo";
     private static final String GITHUB_REPOSITORY = "join-and-telegram";
+    private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
 
     private TelegramNotifier notifier;
     private PluginListener listenerInstance;
+    private PrefixProvider prefixProvider;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
-        reloadPluginConfig();
 
-        // Registrar comando /jointg reload
-        getCommand("jointg").setExecutor((sender, command, label, args) -> {
-            if (args.length > 0 && args[0].equalsIgnoreCase("reload")) {
-                reloadConfig();
-                reloadPluginConfig();
-                sender.sendMessage("§a[JoinTgPlugin] Configuración recargada correctamente.");
-                return true;
-            }
-            sender.sendMessage("§eUso: /jointg reload");
-            return true;
-        });
+        registerReloadCommand();
 
-        getCommand("jointg").setTabCompleter((sender, command, alias, args) -> {
-            if (args.length == 1) {
-                List<String> completions = new ArrayList<>();
-                if ("reload".startsWith(args[0].toLowerCase())) {
-                    completions.add("reload");
-                }
-                return completions;
-            }
-            return Collections.emptyList();
-        });
-
-        if (getServer().getPluginManager().getPlugin("LuckPerms") == null) {
-            getComponentLogger().warn("LuckPerms not found! Install LuckPerms to display prefixes in join messages.");
+        // Integración opcional: solo se carga si LuckPerms está presente.
+        prefixProvider = PrefixProvider.createIfAvailable(this);
+        if (prefixProvider == null) {
+            getComponentLogger().info("LuckPerms not found or not enabled; join prefixes will be empty.");
         }
 
         GitHubUpdateChecker.checkForUpdates(this, GITHUB_OWNER, GITHUB_REPOSITORY);
 
+        // On the initial enable only, announce the server start to Telegram.
+        reloadPluginConfig(true);
+
         getComponentLogger().info("JoinTgPlugin enabled");
     }
 
-    private void reloadPluginConfig() {
+    private void registerReloadCommand() {
+        PluginCommand command = getCommand("jointg");
+        if (command == null) {
+            getComponentLogger().warn("Command 'jointg' is not defined in plugin.yml; /jointg reload will be unavailable.");
+            return;
+        }
+
+        command.setExecutor((sender, cmd, label, args) -> {
+            if (args.length > 0 && args[0].equalsIgnoreCase("reload")) {
+                reloadConfig();
+                reloadPluginConfig(false);
+                sender.sendMessage(MINI_MESSAGE.deserialize("<green>[JoinTgPlugin] Configuración recargada correctamente."));
+                return true;
+            }
+            sender.sendMessage(MINI_MESSAGE.deserialize("<yellow>Uso: /jointg reload"));
+            return true;
+        });
+
+        command.setTabCompleter((sender, cmd, alias, args) -> {
+            if (args.length == 1 && "reload".startsWith(args[0].toLowerCase())) {
+                return List.of("reload");
+            }
+            return Collections.emptyList();
+        });
+    }
+
+    private void reloadPluginConfig(boolean announceStart) {
         if (listenerInstance != null) {
             HandlerList.unregisterAll(listenerInstance);
+            listenerInstance = null;
         }
         if (notifier != null) {
             notifier.close();
             notifier = null;
         }
-        String botToken = getConfig().getString("bot-token");
-        String chatId = getConfig().getString("chat-id");
 
-        if (botToken == null)
-            botToken = "";
-        if (chatId == null)
-            chatId = "";
-
-        botToken = botToken.trim();
-        chatId = chatId.trim();
+        String botToken = getConfig().getString("bot-token", "").trim();
+        String chatId = getConfig().getString("chat-id", "").trim();
 
         boolean telegramEnabled = getConfig().getBoolean("telegram-enabled", false);
 
@@ -123,6 +129,7 @@ public final class JoinTgPlugin extends JavaPlugin {
         listenerInstance = new PluginListener(
                 this,
                 notifier,
+                prefixProvider,
                 title,
                 subtitle,
                 fadeIn,
@@ -134,15 +141,20 @@ public final class JoinTgPlugin extends JavaPlugin {
                 .getPluginManager()
                 .registerEvents(listenerInstance, this);
 
-        if (notifier != null) {
+        if (announceStart) {
             notifier.notifyStart(this);
         }
     }
 
     @Override
     public void onDisable() {
+        if (listenerInstance != null) {
+            HandlerList.unregisterAll(listenerInstance);
+            listenerInstance = null;
+        }
         if (notifier != null) {
             notifier.close();
+            notifier = null;
         }
         getComponentLogger().info("JoinTgPlugin disabled");
     }
